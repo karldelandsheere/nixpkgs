@@ -60,6 +60,37 @@ let
     fetchLFS = true;
     hash = "sha256-SvsmcniDRorwu9x9OLtHD9ftgquyoE5Kl8qDgqi1XdQ=";
   };
+
+  linuxOnlyNativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    kdePackages.wrapQtAppsHook
+    wrapGAppsHook3
+  ];
+
+  linuxOnlyInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    kdePackages.qtwayland     # qtwayland-6.11.0 is tagged badplatform for Darwin
+    kdePackages.qtwebengine   # qtwebengine-6.11.0 fails to build on Darwin
+  
+    # Darwin not supported
+    kdePackages.kconfig
+    kdePackages.kxmlgui
+    kdePackages.ki18n
+    kdePackages.kwindowsystem
+    kdePackages.kservice
+    kdePackages.solid
+    kdePackages.kcoreaddons
+    kdePackages.knotifyconfig
+    kdePackages.knotifications
+    kdePackages.threadweaver
+    kdePackages.kiconthemes
+    kdePackages.kfilemetadata
+    kdePackages.kcalendarcore
+    kdePackages.kio
+    kdePackages.sonnet
+  ];
+
+  darwinOnlyInputs = lib.optionals stdenv.hostPlatform.isDarwin [
+    ffmpeg     # it is commented out for Linux as qtwebengine has its own ffmpeg version, so for Darwin we need it here
+  ];
 in
 
 stdenv.mkDerivation (finalAttrs: {
@@ -88,10 +119,7 @@ stdenv.mkDerivation (finalAttrs: {
     flex
     bison
   ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [ # those are not for Darwin
-    kdePackages.wrapQtAppsHook
-    wrapGAppsHook3
-  ];
+  ++ linuxOnlyNativeBuildInputs;
 
   # Based on <https://www.digikam.org/api/index.html#externaldeps>,
   # but it doesn’t have everything, so you also have to check the
@@ -100,33 +128,7 @@ stdenv.mkDerivation (finalAttrs: {
   # We list non‐Qt dependencies first to override Qt’s propagated
   # build inputs.
 
-  buildInputs = let
-    linuxOnlyInputs = lib.optionals stdenv.hostPlatform.isLinux [
-      kdePackages.qtwayland     # qtwayland-6.11.0 is tagged badplatform for Darwin
-      kdePackages.qtwebengine   # qtwebengine-6.11.0 fails to build on Darwin
-    
-      # Darwin not supported
-      kdePackages.kconfig
-      kdePackages.kxmlgui
-      kdePackages.ki18n
-      kdePackages.kwindowsystem
-      kdePackages.kservice
-      kdePackages.solid
-      kdePackages.kcoreaddons
-      kdePackages.knotifyconfig
-      kdePackages.knotifications
-      kdePackages.threadweaver
-      kdePackages.kiconthemes
-      kdePackages.kfilemetadata
-      kdePackages.kcalendarcore
-      kdePackages.kio
-      kdePackages.sonnet
-    ];
-
-    darwinOnlyInputs = lib.optionals stdenv.hostPlatform.isDarwin [
-      ffmpeg     # it is commented out for Linux as qtwebengine has its own ffmpeg version, so for Darwin we need it here
-    ];
-  in [
+  buildInputs = [
     opencv.cxxdev
     libtiff
     libpng
