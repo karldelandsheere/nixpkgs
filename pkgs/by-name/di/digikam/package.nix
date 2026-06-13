@@ -193,7 +193,7 @@ stdenv.mkDerivation (finalAttrs: {
       if stdenv.hostPlatform.isLinux then ''
         qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
       ''
-      else "";
+      else ""
     )
 
     ( ''
@@ -209,7 +209,7 @@ stdenv.mkDerivation (finalAttrs: {
         substituteInPlace $out/bin/digitaglinktree \
           --replace "/usr/bin/perl" "${lib.getExe perl}" \
           --replace "/usr/bin/sqlite3" "${lib.getExe sqlite}"
-      '';
+      ''
     )
   ];
 
