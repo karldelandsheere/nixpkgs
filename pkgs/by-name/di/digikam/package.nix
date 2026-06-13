@@ -213,7 +213,7 @@ stdenv.mkDerivation (finalAttrs: {
     sourceProvenance = [ lib.sourceTypes.fromSource ];
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ philipdb ];
-    platforms = lib.platforms.linux;
+    platforms = lib.platforms.linux ++ lib.platforms.darwin;
     mainProgram = "digikam";
   };
 })
