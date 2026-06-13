@@ -135,7 +135,6 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.qt5compat
     kdePackages.qtmultimedia
 
-    kdePackages.kconfig
     kdePackages.kxmlgui
     kdePackages.ki18n
     kdePackages.kwindowsystem
@@ -157,6 +156,7 @@ stdenv.mkDerivation (finalAttrs: {
     libGLX
     libGLU
     
+    kdePackages.kconfig
     kdePackages.qtwayland
   ];
 
