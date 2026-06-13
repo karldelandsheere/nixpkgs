@@ -50,6 +50,8 @@
   # enblend-enfuse,
   # hugin,
   gnumake,
+
+  bzip2,
 }:
 
 let
