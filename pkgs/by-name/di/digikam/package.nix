@@ -195,9 +195,12 @@ stdenv.mkDerivation (finalAttrs: {
       qtWrapperArgs+=(--prefix PATH : ${
         lib.makeBinPath [
           gnumake
+          exiftool
+        ]
+        # These are not core dependencies but make the build fail on darwin, so let's make them Linux only for now
+        ++ lib.optionals stdenv.hostPlatform.isLinux [
           hugin
           enblend-enfuse
-          exiftool
         ]
       })
       qtWrapperArgs+=(--suffix DK_PLUGIN_PATH : ${placeholder "out"}/${kdePackages.qtbase.qtPluginPrefix}/digikam)
