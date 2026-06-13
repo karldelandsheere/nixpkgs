@@ -100,7 +100,33 @@ stdenv.mkDerivation (finalAttrs: {
   # We list non‐Qt dependencies first to override Qt’s propagated
   # build inputs.
 
-  buildInputs = [
+  buildInputs = let
+    linuxOnlyInputs = lib.optionals stdenv.hostPlatform.isLinux [
+      kdePackages.qtwayland     # qtwayland-6.11.0 is tagged badplatform for Darwin
+      kdePackages.qtwebengine   # qtwebengine-6.11.0 fails to build on Darwin
+    
+      # Darwin not supported
+      kdePackages.kconfig
+      kdePackages.kxmlgui
+      kdePackages.ki18n
+      kdePackages.kwindowsystem
+      kdePackages.kservice
+      kdePackages.solid
+      kdePackages.kcoreaddons
+      kdePackages.knotifyconfig
+      kdePackages.knotifications
+      kdePackages.threadweaver
+      kdePackages.kiconthemes
+      kdePackages.kfilemetadata
+      kdePackages.kcalendarcore
+      kdePackages.kio
+      kdePackages.sonnet
+    ];
+
+    darwinOnlyInputs = lib.optionals stdenv.hostPlatform.isDarwin [
+      ffmpeg     # it is commented out for Linux as qtwebengine has its own ffmpeg version, so for Darwin we need it here
+    ];
+  in [
     opencv.cxxdev
     libtiff
     libpng
@@ -139,30 +165,8 @@ stdenv.mkDerivation (finalAttrs: {
     # libksane and akonadi-contacts do not yet work when building for
     # Qt 6.
   ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    kdePackages.qtwayland     # qtwayland-6.11.0 is tagged badplatform for Darwin
-    kdePackages.qtwebengine   # qtwebengine-6.11.0 fails to build on Darwin
-    
-    # Darwin not supported
-    kdePackages.kconfig
-    kdePackages.kxmlgui
-    kdePackages.ki18n
-    kdePackages.kwindowsystem
-    kdePackages.kservice
-    kdePackages.solid
-    kdePackages.kcoreaddons
-    kdePackages.knotifyconfig
-    kdePackages.knotifications
-    kdePackages.threadweaver
-    kdePackages.kiconthemes
-    kdePackages.kfilemetadata
-    kdePackages.kcalendarcore
-    kdePackages.kio
-    kdePackages.sonnet
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    ffmpeg     # it is commented out for Linux as qtwebengine has its own ffmpeg version, so for Darwin we need it here
-  ];
+  ++ linuxOnlyInputs
+  ++ darwinOnlyInputs;
 
   checkInputs = [ kdePackages.qtdeclarative ];
 
