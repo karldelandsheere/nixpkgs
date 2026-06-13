@@ -125,12 +125,13 @@ stdenv.mkDerivation (finalAttrs: {
     libusb1
     imagemagick
     x265
+    libGLX
+    libGLU
 
     kdePackages.qtbase
     kdePackages.qtnetworkauth
     kdePackages.qtscxml
     kdePackages.qtsvg
-    kdePackages.qtwayland
     kdePackages.qtwebengine
     kdePackages.qt5compat
     kdePackages.qtmultimedia
@@ -139,9 +140,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Qt 6.
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [
-    libGLX
-    libGLU
-
+    kdePackages.qtwayland # qtwayland-6.11.0 is broken on Darwin
+    
+    # Darwin not supported
     kdePackages.kconfig
     kdePackages.kxmlgui
     kdePackages.ki18n
