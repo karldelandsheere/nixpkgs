@@ -132,7 +132,6 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.qtnetworkauth
     kdePackages.qtscxml
     kdePackages.qtsvg
-    kdePackages.qtwebengine
     kdePackages.qt5compat
     kdePackages.qtmultimedia
     
@@ -140,7 +139,8 @@ stdenv.mkDerivation (finalAttrs: {
     # Qt 6.
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [
-    kdePackages.qtwayland # qtwayland-6.11.0 is broken on Darwin
+    kdePackages.qtwayland     # qtwayland-6.11.0 is tagged badplatform for Darwin
+    kdePackages.qtwebengine   # qtwebengine-6.11.0 fails to build on Darwin
     
     # Darwin not supported
     kdePackages.kconfig
@@ -158,6 +158,9 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.kcalendarcore
     kdePackages.kio
     kdePackages.sonnet
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    ffmpeg     # it is commented out for Linux as qtwebengine has its own ffmpeg version, so for Darwin we need it here
   ];
 
   checkInputs = [ kdePackages.qtdeclarative ];
