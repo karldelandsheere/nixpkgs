@@ -47,8 +47,8 @@
 
   runtimeShell,
   # For panorama and focus stacking
-  enblend-enfuse,
-  hugin,
+  # enblend-enfuse,
+  # hugin,
   gnumake,
 }:
 
@@ -194,8 +194,6 @@ stdenv.mkDerivation (finalAttrs: {
       qtWrapperArgs+=(--prefix PATH : ${
         lib.makeBinPath [
           gnumake
-          hugin
-          enblend-enfuse
           exiftool
         ]
       })
