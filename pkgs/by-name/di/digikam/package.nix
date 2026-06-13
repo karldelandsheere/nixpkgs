@@ -190,18 +190,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
       qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
-    '' + ''
+    '' + lib.optionalString stdenv.hostPlatform.isLinux ''
       qtWrapperArgs+=(--prefix PATH : ${
-        lib.makeBinPath (
-          [
-            gnumake
-            exiftool
-          ] + lib.optionals stdenv.hostPlatform.isLinux [
-            hugin
-            enblend-enfuse
-          ]
-        )
+        lib.makeBinPath [
+          gnumake
+          hugin
+          enblend-enfuse
+          exiftool
+        ]
       })
+    '' + lib.optionalString stdenv.hostPlatform.isDarwin ''
+      qtWrapperArgs+=(--prefix PATH : ${
+        lib.makeBinPath [
+          gnumake
+          exiftool
+        ]
+      })
+    '' + ''
       qtWrapperArgs+=(--suffix DK_PLUGIN_PATH : ${placeholder "out"}/${kdePackages.qtbase.qtPluginPrefix}/digikam)
       substituteInPlace $out/bin/digitaglinktree \
         --replace "/usr/bin/perl" "${lib.getExe perl}" \
