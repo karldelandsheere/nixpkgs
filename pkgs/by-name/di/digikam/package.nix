@@ -86,6 +86,8 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.extra-cmake-modules
     flex
     bison
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [ # those are not for Darwin
     kdePackages.wrapQtAppsHook
     wrapGAppsHook3
   ];
@@ -123,8 +125,6 @@ stdenv.mkDerivation (finalAttrs: {
     libusb1
     imagemagick
     x265
-    libGLX
-    libGLU
 
     kdePackages.qtbase
     kdePackages.qtnetworkauth
@@ -154,6 +154,9 @@ stdenv.mkDerivation (finalAttrs: {
     # Qt 6.
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [
+    libGLX
+    libGLU
+    
     kdePackages.qtwayland
   ];
 
@@ -173,28 +176,38 @@ stdenv.mkDerivation (finalAttrs: {
   cmakeFlags = [
     (lib.cmakeBool "BUILD_WITH_QT6" true)
     (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doCheck)
-    (lib.cmakeBool "ENABLE_KFILEMETADATASUPPORT" stdenv.hostPlatform.isLinux) # Was true but I'm trying without it for Darwin
-    #(lib.cmakeBool "ENABLE_AKONADICONTACTSUPPORT" true)
-    (lib.cmakeBool "ENABLE_MEDIAPLAYER" true)
+    (lib.cmakeBool "ENABLE_KFILEMETADATASUPPORT" stdenv.hostPlatform.isLinux) # Make it Linux only for now so it's easier to debug
+    #(lib.cmakeBool "ENABLE_AKONADICONTACTSUPPORT" stdenv.hostPlatform.isLinux) # Changed to isLinux for the day it is uncommented
+    (lib.cmakeBool "ENABLE_MEDIAPLAYER" stdenv.hostPlatform.isLinux) # Make it Linux only for now so it's easier to debug
     (lib.cmakeBool "ENABLE_APPSTYLES" true)
     (lib.optionals enableCuda "-DCUDA_TOOLKIT_ROOT_DIR=${cudaPackages.cudatoolkit}")
+
+    (lib.cmakeBool "ENABLE_KIO" stdenv.hostPlatform.isLinux) # Make it Linux only for now so it's easier to debug  
+    (lib.cmakeBool "ENABLE_DBUS" stdenv.hostPlatform.isLinux) # Make it Linux only for now so it's easier to debug
   ];
 
   # Tests segfault for some reason…
   # TODO: Get them working.
   doCheck = false;
 
-  dontWrapGApps = true;
+  dontWrapGApps = stdenv.hostPlatform.isLinux; # Make it Linux only for now so it's easier to debug
 
-  preFixup = ''
+  preFixup = let
+    # Some tools are working on Linux only for now
+    tools = [
+      gnumake
+      exiftool
+    ] ++ lib.optionals stdenv.hostPlatform.isLinux [
+      hugin
+      enblend-enfuse
+    ];
+  in
+  # gappsWrapperArgs is apparently not relevant on Darwin
+  lib.optionalString stdenv.hostPlatform.isLinux ''
     qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+  '' + ''
     qtWrapperArgs+=(--prefix PATH : ${
-      lib.makeBinPath [
-        gnumake
-        hugin
-        enblend-enfuse
-        exiftool
-      ]
+      lib.makeBinPath tools
     })
     qtWrapperArgs+=(--suffix DK_PLUGIN_PATH : ${placeholder "out"}/${kdePackages.qtbase.qtPluginPrefix}/digikam)
     substituteInPlace $out/bin/digitaglinktree \
@@ -216,7 +229,7 @@ stdenv.mkDerivation (finalAttrs: {
     sourceProvenance = [ lib.sourceTypes.fromSource ];
     license = lib.licenses.gpl2Plus;
     maintainers = with lib.maintainers; [ philipdb ];
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    platforms = lib.platforms.linux ++ lib.platforms.darwin; # Added darwin
     mainProgram = "digikam";
   };
 })
