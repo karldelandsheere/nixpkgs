@@ -188,20 +188,19 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontWrapGApps = stdenv.hostPlatform.isLinux;
 
-  preFixup = ''
-    '' + lib.optionalString stdenv.hostPlatform.isLinux ''
+  preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
       qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
     '' + ''
       qtWrapperArgs+=(--prefix PATH : ${
-        lib.makeBinPath [
-          gnumake
-          exiftool
-        ]
-        # These are not core dependencies but make the build fail on darwin, so let's make them Linux only for now
-        ++ lib.optionals stdenv.hostPlatform.isLinux [
-          hugin
-          enblend-enfuse
-        ]
+        lib.makeBinPath (
+          [
+            gnumake
+            exiftool
+          ] + lib.optionals stdenv.hostPlatform.isLinux [
+            hugin
+            enblend-enfuse
+          ]
+        )
       })
       qtWrapperArgs+=(--suffix DK_PLUGIN_PATH : ${placeholder "out"}/${kdePackages.qtbase.qtPluginPrefix}/digikam)
       substituteInPlace $out/bin/digitaglinktree \
