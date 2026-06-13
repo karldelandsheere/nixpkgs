@@ -175,7 +175,7 @@ stdenv.mkDerivation (finalAttrs: {
   cmakeFlags = [
     (lib.cmakeBool "BUILD_WITH_QT6" true)
     (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doCheck)
-    (lib.cmakeBool "ENABLE_KFILEMETADATASUPPORT" true)
+    (lib.cmakeBool "ENABLE_KFILEMETADATASUPPORT" stdenv.hostPlatform.isLinux)
     #(lib.cmakeBool "ENABLE_AKONADICONTACTSUPPORT" true)
     (lib.cmakeBool "ENABLE_MEDIAPLAYER" true)
     (lib.cmakeBool "ENABLE_APPSTYLES" true)
