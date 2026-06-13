@@ -14,6 +14,7 @@
   wrapGAppsHook3,
 
   exiftool,
+  ffmpeg,
   opencv,
   libtiff,
   libpng,
