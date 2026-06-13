@@ -130,12 +130,10 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.qtnetworkauth
     kdePackages.qtscxml
     kdePackages.qtsvg
-    # kdePackages.qtwayland # Moved to optionals isLinux because it breaks on Darwin
     kdePackages.qtwebengine
     kdePackages.qt5compat
     kdePackages.qtmultimedia
 
-    kdePackages.kxmlgui
     kdePackages.ki18n
     kdePackages.kwindowsystem
     kdePackages.kservice
@@ -155,9 +153,11 @@ stdenv.mkDerivation (finalAttrs: {
   ++ lib.optionals stdenv.hostPlatform.isLinux [
     libGLX
     libGLU
-    
-    kdePackages.kconfig
+
     kdePackages.qtwayland
+
+    kdePackages.kconfig
+    kdePackages.kxmlgui
   ];
 
   checkInputs = [ kdePackages.qtdeclarative ];
