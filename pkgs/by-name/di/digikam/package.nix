@@ -157,6 +157,9 @@ stdenv.mkDerivation (finalAttrs: {
     libGLU
 
     kdePackages.qtwayland
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [
+    bzip2
   ];
 
   checkInputs = [ kdePackages.qtdeclarative ];
