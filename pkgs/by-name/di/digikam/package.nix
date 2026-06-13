@@ -188,30 +188,23 @@ stdenv.mkDerivation (finalAttrs: {
 
   dontWrapGApps = stdenv.hostPlatform.isLinux;
 
-  preFixup = lib.mkMerge [
-    (
-      if stdenv.hostPlatform.isLinux then ''
-        qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
-      ''
-      else ""
-    )
-
-    ( ''
-        qtWrapperArgs+=(--prefix PATH : ${
-          lib.makeBinPath [
-            gnumake
-            hugin
-            enblend-enfuse
-            exiftool
-          ]
-        })
-        qtWrapperArgs+=(--suffix DK_PLUGIN_PATH : ${placeholder "out"}/${kdePackages.qtbase.qtPluginPrefix}/digikam)
-        substituteInPlace $out/bin/digitaglinktree \
-          --replace "/usr/bin/perl" "${lib.getExe perl}" \
-          --replace "/usr/bin/sqlite3" "${lib.getExe sqlite}"
-      ''
-    )
-  ];
+  preFixup = ''
+    '' + lib.optionalString stdenv.hostPlatform.isLinux ''
+      qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+    '' + ''
+      qtWrapperArgs+=(--prefix PATH : ${
+        lib.makeBinPath [
+          gnumake
+          hugin
+          enblend-enfuse
+          exiftool
+        ]
+      })
+      qtWrapperArgs+=(--suffix DK_PLUGIN_PATH : ${placeholder "out"}/${kdePackages.qtbase.qtPluginPrefix}/digikam)
+      substituteInPlace $out/bin/digitaglinktree \
+        --replace "/usr/bin/perl" "${lib.getExe perl}" \
+        --replace "/usr/bin/sqlite3" "${lib.getExe sqlite}"
+    '';
 
   # over 3h in a normal build slot (2 cores
   requiredSystemFeatures = [ "big-parallel" ];
