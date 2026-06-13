@@ -87,6 +87,8 @@ stdenv.mkDerivation (finalAttrs: {
     flex
     bison
     kdePackages.wrapQtAppsHook
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
     wrapGAppsHook3
   ];
 
@@ -119,18 +121,13 @@ stdenv.mkDerivation (finalAttrs: {
     eigen
     lensfun
     liblqr1
-    libgphoto2
-    libusb1
     imagemagick
     x265
-    libGLX
-    libGLU
-
+ 
     kdePackages.qtbase
     kdePackages.qtnetworkauth
     kdePackages.qtscxml
     kdePackages.qtsvg
-    kdePackages.qtwayland
     kdePackages.qtwebengine
     kdePackages.qt5compat
     kdePackages.qtmultimedia
@@ -152,6 +149,14 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.sonnet
     # libksane and akonadi-contacts do not yet work when building for
     # Qt 6.
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    libgphoto2
+    libusb1
+    libGLX
+    libGLU
+
+    kdePackages.qtwayland
   ];
 
   checkInputs = [ kdePackages.qtdeclarative ];
@@ -181,23 +186,32 @@ stdenv.mkDerivation (finalAttrs: {
   # TODO: Get them working.
   doCheck = false;
 
-  dontWrapGApps = true;
+  dontWrapGApps = stdenv.hostPlatform.isLinux;
 
-  preFixup = ''
-    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
-    qtWrapperArgs+=(--prefix PATH : ${
-      lib.makeBinPath [
-        gnumake
-        hugin
-        enblend-enfuse
-        exiftool
-      ]
-    })
-    qtWrapperArgs+=(--suffix DK_PLUGIN_PATH : ${placeholder "out"}/${kdePackages.qtbase.qtPluginPrefix}/digikam)
-    substituteInPlace $out/bin/digitaglinktree \
-      --replace "/usr/bin/perl" "${lib.getExe perl}" \
-      --replace "/usr/bin/sqlite3" "${lib.getExe sqlite}"
-  '';
+  preFixup = lib.mkMerge [
+    (
+      if stdenv.hostPlatform.isLinux then ''
+        qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+      ''
+      else "";
+    )
+
+    ( ''
+        qtWrapperArgs+=(--prefix PATH : ${
+          lib.makeBinPath [
+            gnumake
+            hugin
+            enblend-enfuse
+            exiftool
+          ]
+        })
+        qtWrapperArgs+=(--suffix DK_PLUGIN_PATH : ${placeholder "out"}/${kdePackages.qtbase.qtPluginPrefix}/digikam)
+        substituteInPlace $out/bin/digitaglinktree \
+          --replace "/usr/bin/perl" "${lib.getExe perl}" \
+          --replace "/usr/bin/sqlite3" "${lib.getExe sqlite}"
+      '';
+    )
+  ];
 
   # over 3h in a normal build slot (2 cores
   requiredSystemFeatures = [ "big-parallel" ];
