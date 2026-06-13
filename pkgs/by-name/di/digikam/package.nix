@@ -47,11 +47,9 @@
 
   runtimeShell,
   # For panorama and focus stacking
-  # enblend-enfuse,
-  # hugin,
+  enblend-enfuse,
+  hugin,
   gnumake,
-
-  bzip2,
 }:
 
 let
@@ -89,8 +87,6 @@ stdenv.mkDerivation (finalAttrs: {
     flex
     bison
     kdePackages.wrapQtAppsHook
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
     wrapGAppsHook3
   ];
 
@@ -123,13 +119,18 @@ stdenv.mkDerivation (finalAttrs: {
     eigen
     lensfun
     liblqr1
+    libgphoto2
+    libusb1
     imagemagick
     x265
- 
+    libGLX
+    libGLU
+
     kdePackages.qtbase
     kdePackages.qtnetworkauth
     kdePackages.qtscxml
     kdePackages.qtsvg
+    # kdePackages.qtwayland # Moved to optionals isLinux because it breaks on Darwin
     kdePackages.qtwebengine
     kdePackages.qt5compat
     kdePackages.qtmultimedia
@@ -153,15 +154,7 @@ stdenv.mkDerivation (finalAttrs: {
     # Qt 6.
   ]
   ++ lib.optionals stdenv.hostPlatform.isLinux [
-    libgphoto2
-    libusb1
-    libGLX
-    libGLU
-
     kdePackages.qtwayland
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isDarwin [
-    bzip2
   ];
 
   checkInputs = [ kdePackages.qtdeclarative ];
@@ -180,7 +173,7 @@ stdenv.mkDerivation (finalAttrs: {
   cmakeFlags = [
     (lib.cmakeBool "BUILD_WITH_QT6" true)
     (lib.cmakeBool "BUILD_TESTING" finalAttrs.finalPackage.doCheck)
-    (lib.cmakeBool "ENABLE_KFILEMETADATASUPPORT" stdenv.hostPlatform.isLinux)
+    (lib.cmakeBool "ENABLE_KFILEMETADATASUPPORT" stdenv.hostPlatform.isLinux) # Was true but I'm trying without it for Darwin
     #(lib.cmakeBool "ENABLE_AKONADICONTACTSUPPORT" true)
     (lib.cmakeBool "ENABLE_MEDIAPLAYER" true)
     (lib.cmakeBool "ENABLE_APPSTYLES" true)
@@ -191,30 +184,23 @@ stdenv.mkDerivation (finalAttrs: {
   # TODO: Get them working.
   doCheck = false;
 
-  dontWrapGApps = stdenv.hostPlatform.isLinux;
+  dontWrapGApps = true;
 
-  preFixup = lib.optionalString stdenv.hostPlatform.isLinux ''
-      qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
-    '' + lib.optionalString stdenv.hostPlatform.isLinux ''
-      qtWrapperArgs+=(--prefix PATH : ${
-        lib.makeBinPath [
-          gnumake
-          exiftool
-        ]
-      })
-    '' + lib.optionalString stdenv.hostPlatform.isDarwin ''
-      qtWrapperArgs+=(--prefix PATH : ${
-        lib.makeBinPath [
-          gnumake
-          exiftool
-        ]
-      })
-    '' + ''
-      qtWrapperArgs+=(--suffix DK_PLUGIN_PATH : ${placeholder "out"}/${kdePackages.qtbase.qtPluginPrefix}/digikam)
-      substituteInPlace $out/bin/digitaglinktree \
-        --replace "/usr/bin/perl" "${lib.getExe perl}" \
-        --replace "/usr/bin/sqlite3" "${lib.getExe sqlite}"
-    '';
+  preFixup = ''
+    qtWrapperArgs+=("''${gappsWrapperArgs[@]}")
+    qtWrapperArgs+=(--prefix PATH : ${
+      lib.makeBinPath [
+        gnumake
+        hugin
+        enblend-enfuse
+        exiftool
+      ]
+    })
+    qtWrapperArgs+=(--suffix DK_PLUGIN_PATH : ${placeholder "out"}/${kdePackages.qtbase.qtPluginPrefix}/digikam)
+    substituteInPlace $out/bin/digitaglinktree \
+      --replace "/usr/bin/perl" "${lib.getExe perl}" \
+      --replace "/usr/bin/sqlite3" "${lib.getExe sqlite}"
+  '';
 
   # over 3h in a normal build slot (2 cores
   requiredSystemFeatures = [ "big-parallel" ];
