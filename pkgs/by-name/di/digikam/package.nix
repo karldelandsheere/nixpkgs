@@ -130,10 +130,20 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.qtnetworkauth
     kdePackages.qtscxml
     kdePackages.qtsvg
+    kdePackages.qtwayland
     kdePackages.qtwebengine
     kdePackages.qt5compat
     kdePackages.qtmultimedia
+    
+    # libksane and akonadi-contacts do not yet work when building for
+    # Qt 6.
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    libGLX
+    libGLU
 
+    kdePackages.kconfig
+    kdePackages.kxmlgui
     kdePackages.ki18n
     kdePackages.kwindowsystem
     kdePackages.kservice
@@ -147,17 +157,6 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.kcalendarcore
     kdePackages.kio
     kdePackages.sonnet
-    # libksane and akonadi-contacts do not yet work when building for
-    # Qt 6.
-  ]
-  ++ lib.optionals stdenv.hostPlatform.isLinux [
-    libGLX
-    libGLU
-
-    kdePackages.qtwayland
-
-    kdePackages.kconfig
-    kdePackages.kxmlgui
   ];
 
   checkInputs = [ kdePackages.qtdeclarative ];
