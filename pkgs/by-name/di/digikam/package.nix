@@ -62,14 +62,13 @@ let
   };
 
   linuxOnlyNativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
-    kdePackages.wrapQtAppsHook
     wrapGAppsHook3
   ];
 
   linuxOnlyInputs = lib.optionals stdenv.hostPlatform.isLinux [
     kdePackages.qtwayland     # qtwayland-6.11.0 is tagged badplatform for Darwin
     kdePackages.qtwebengine   # qtwebengine-6.11.0 fails to build on Darwin
-  
+
     # Darwin not supported
     kdePackages.kconfig
     kdePackages.kxmlgui
@@ -116,6 +115,7 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     ninja
     kdePackages.extra-cmake-modules
+    kdePackages.wrapQtAppsHook
     flex
     bison
   ]
@@ -163,7 +163,7 @@ stdenv.mkDerivation (finalAttrs: {
     kdePackages.qtsvg
     kdePackages.qt5compat
     kdePackages.qtmultimedia
-    
+
     # libksane and akonadi-contacts do not yet work when building for
     # Qt 6.
   ]
@@ -192,7 +192,7 @@ stdenv.mkDerivation (finalAttrs: {
     (lib.cmakeBool "ENABLE_APPSTYLES" true)
     (lib.optionals enableCuda "-DCUDA_TOOLKIT_ROOT_DIR=${cudaPackages.cudatoolkit}")
 
-    (lib.cmakeBool "ENABLE_KIO" stdenv.hostPlatform.isLinux) # Make it Linux only for now so it's easier to debug  
+    (lib.cmakeBool "ENABLE_KIO" stdenv.hostPlatform.isLinux) # Make it Linux only for now so it's easier to debug
     (lib.cmakeBool "ENABLE_DBUS" stdenv.hostPlatform.isLinux) # Make it Linux only for now so it's easier to debug
   ];
 
